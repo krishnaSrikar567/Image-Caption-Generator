@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Image Captioning</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1>✨ AI Image Captioning ✨</h1>
+      <p>Upload your own image or try a sample below — drag & drop works for both!</p>
+    </header>
+
+    <main>
+      <form method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+        <label class="custom-file-upload">
+          <input type="file" id="fileInput" name="image" accept="image/*" required>
+          📷 Choose Image
+        </label>
+        <span id="file-chosen">No file chosen</span>
+
+        <div class="drop-zone" id="drop-zone">
+          or drag & drop an image here
+        </div>
+
+        <button type="submit">📝 Generate Caption</button>
+      </form>
+
+      <div class="demo-images">
+        <h3>Try these Test images by Dragging them into box:</h3>
+        <div class="demo-list">
+          <img src="{{ url_for('static', filename='demo/img_1.png') }}" alt="Image 1"
+            draggable="true"
+            onclick="useDemo('img_1.png')"
+            ondragstart="startDrag(event, 'img_1.png')">
+          <img src="{{ url_for('static', filename='demo/img_2.png') }}" alt="Image 2"
+            draggable="true"
+            onclick="useDemo('img_2.png')"
+            ondragstart="startDrag(event, 'img_2.png')">
+          <img src="{{ url_for('static', filename='demo/img_3.png') }}" alt="Image 3"
+            draggable="true"
+            onclick="useDemo('img_3.png')"
+            ondragstart="startDrag(event, 'img_3.png')">
+        </div>
+      </div>
+
+      {% if filename %}
+        <div class="result">
+          <h2>🖼️ Uploaded Image:</h2>
+          <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+          <h3>✨ Caption:</h3>
+          <p>{{ caption }}</p>
+        </div>
+      {% endif %}
+    </main>
+
+    <footer>
+      <p>⚡ Powered by DenseNet201 + LSTM + Flask</p>
+    </footer>
+  </div>
+
+  <script>
+    const actualBtn = document.getElementById('fileInput');
+    const fileChosen = document.getElementById('file-chosen');
+    const dropZone = document.getElementById('drop-zone');
+
+    actualBtn.addEventListener('change', function(){
+      if (this.files.length > 0) {
+        fileChosen.textContent = this.files[0].name;
+      } else {
+        fileChosen.textContent = "No file chosen";
+      }
+    });
+
+    function useDemo(filename) {
+      window.location.href = '/use-demo/' + filename;
+    }
+
+    function startDrag(e, filename) {
+      e.dataTransfer.setData('text/plain', filename);
+    }
+
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropZone.classList.add('hover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+      dropZone.classList.remove('hover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropZone.classList.remove('hover');
+
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        actualBtn.files = dataTransfer.files;
+        fileChosen.textContent = file.name;
+        return;
+      }
+
+      const demoFilename = e.dataTransfer.getData('text/plain');
+      if (demoFilename) {
+        useDemo(demoFilename);
+      }
+    });
+  </script>
+</body>
+</html>
