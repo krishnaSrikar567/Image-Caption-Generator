@@ -2,7 +2,6 @@ Flask
 tensorflow
 numpy
 Pillow
-pickle5
 gdown
 gunicorn
 git-lfs
